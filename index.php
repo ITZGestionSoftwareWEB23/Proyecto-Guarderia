@@ -3,7 +3,7 @@
 
 echo "hola mundo";
 
-a
+echo '<a href = "views/modules/auth/index.php"> a Login</a>';
 
 ?>
 

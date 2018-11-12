@@ -1,13 +1,14 @@
 <?php
-require '../models/conexion.php';
-include 'funcs.php';
+
+include "../../../models/funcs.php";
+
 session_start();
 
 if(isset($_SESSION["id_usuario"])){ //En caso de existir la sesión redireccionamos
-		header("Location: ../../index.php");
+		header("Location: ../../../index.php");
 	}
-
-	$errors = array();
+	
+		$errors = array();
 
 	if(!empty($_POST))
 	{
@@ -30,12 +31,12 @@ if(isset($_SESSION["id_usuario"])){ //En caso de existir la sesión redirecciona
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Autenticacion</title>
-  <link rel="stylesheet" href="../css/estilos.css">
+<!--  <link rel="stylesheet" href="../css/estilos.css">
   <link rel="stylesheet" href="../css/styleindex.css">
   <link rel="stylesheet" href="../css/formualario.css">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/mensaje.css">
-  <link rel="stylesheet" type="text/css" href="../css/styleP.css">
+  <link rel="stylesheet" type="text/css" href="../css/styleP.css">-->
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
@@ -50,11 +51,11 @@ if(isset($_SESSION["id_usuario"])){ //En caso de existir la sesión redirecciona
               <input type="text" name="logea_cliente" id="logea_cliente" placeholder="nombre o correo">
                 <br><br>
                 <input type="password" name="logea_cliente_pass" id="logea_cliente_pass" placeholder="contrasenia">
-                <label>No estas registrado ?</label><a href="registro_login.php" class="registrarC">Registrate...</a>
+                <label>No estas registrado ?</label><a href="credenciales.php" class="registrarC">Registrate...</a>
                 <br><br>
               <input type="submit" name="btn_ingresa" id="btn_ingresa" value="Ingresa">
           </div>
-      </form>
+  
       <?php echo resultBlock($errors); ?>
 
 </body>
