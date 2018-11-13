@@ -1,16 +1,16 @@
 <?php
-$DB_CONNECTION="mysql";
-$DB_HOST="127.0.0.1";
-$DB_PORT="3306";
-$DB_DATABASE="login";
-$DB_USERNAME="root";
-$DB_PASSWORD="";
 
-$mysqli = new mysqli($DB_HOST,$DB_USERNAME,$DB_PASSWORD,$DB_DATABASE);
-if (mysqli_connect_errno()) {
-	echo "Error:: ".mysqli_connect_error();
-	exit();
-}else{
-	echo "conectado";
+class Conexion{
+
+	public function conectar(){
+		$cnn = new PDO("mysql:host=localhost;dbname=kinder","root","12345");
+		//var_dump($cnn);
+		return $cnn;
+	}
+	
 }
+// 
+/*$a = new Conexion();
+$a->conectar();*/
+
 ?>

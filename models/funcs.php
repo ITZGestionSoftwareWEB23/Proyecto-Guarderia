@@ -1,10 +1,11 @@
 <?php
 
-function isNull(/* variables*/) {
+function isNull($nombre,$email,$pass) {
 
 	if (
-			strlen(trim(/*variable formato $variable*/)) < 1 ||
-			strlen(trim(/*variable formato $variable*/)) < 1 ) {
+			strlen(trim($nombre)) < 1 ||
+			strlen(trim($pass)) < 1 ||
+			strlen(trim($email)) < 1 ) {
 		return true;
 	} else {
 		return false;
@@ -40,7 +41,7 @@ function minMax($min, $max, $valor) {
 function usuarioExiste($nom_usu) {
 	global $mysqli;
 
-	$stmt = $mysqli->prepare("SELECT cve_usu FROM usuario WHERE nom_usu = ? LIMIT 1");
+	$stmt = $mysqli->prepare("SELECT id FROM usuarios WHERE nombre = ? LIMIT 1");
 	$stmt->bind_param("s", $nom_usu);
 	$stmt->execute();
 	$stmt->store_result();
@@ -57,7 +58,7 @@ function usuarioExiste($nom_usu) {
 function emailExiste($email) {
 	global $mysqli;
 
-	$stmt = $mysqli->prepare("SELECT cve_usu FROM usuario WHERE correo_usu = ? LIMIT 1");
+	$stmt = $mysqli->prepare("SELECT id FROM usuarios WHERE email = ? LIMIT 1");
 	$stmt->bind_param("s", $email);
 	$stmt->execute();
 	$stmt->store_result();
@@ -94,24 +95,11 @@ function resultBlock($errors) {
 	}
 }
 
-function registraUsuario2($usuario, $pass_hash, $nombre, $email, $activo, $token, $tipo_usuario) {
-
-	global $mysqli;
-
-	$stmt = $mysqli->prepare("INSERT INTO usuarios (usuario, password, nombre, correo, activacion, token, id_tipo) VALUES(?,?,?,?,?,?,?)");
-	$stmt->bind_param('ssssisi', $usuario, $pass_hash, $nombre, $email, $activo, $token, $tipo_usuario);
-
-	if ($stmt->execute()) {
-		return $mysqli->insert_id;
-	} else {
-		return 0;
-	}
-}
 
 function obtenerCVE_USU($email) {
 	global $mysqli;
 
-	$stmt = $mysqli->prepare("SELECT cve_usu FROM usuario WHERE correo_usu = ? LIMIT 1");
+	$stmt = $mysqli->prepare("SELECT id FROM usuarios WHERE email = ? LIMIT 1");
 	$stmt->bind_param("s", $email);
 	$stmt->execute();
 	$stmt->bind_result($clave_usu);
@@ -119,14 +107,14 @@ function obtenerCVE_USU($email) {
 	return $clave_usu;
 }
 
-function registraUsuario($nom_per, $ap_per, $am_per, $fn_per, $tel_per, $direccion, $lat, $lng, $tipo, $correo, $nom_usu, $pass_hash, $cb, $vlic, $tipo_usuario) {
+function registraUsuario($tipo_usuario, $nombre, $correo, $pass_hash) {
 
 	global $mysqli;
-	if (!($stmt = $mysqli->prepare("CALL ps_registroUsuario(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"))) {
+	if (!($stmt = $mysqli->prepare("INSERT INTO usuarios VALUES(NULL,?,0,?,?,?,NULL,NOW(),NULL)"))) {
 		echo "Falló la preparación: (" . $mysqli->errno . ") " . $mysqli->error;
 	} else {
 
-		$stmt->bind_param('ssssisddssssssi', $nom_per, $ap_per, $am_per, $fn_per, $tel_per, $direccion, $lat, $lng, $tipo, $correo, $nom_usu, $pass_hash, $cb, $vlic, $tipo_usuario);
+		$stmt->bind_param('isss', $tipo_usuario, $nombre, $correo, $pass_hash);
 		if ($stmt->execute()) {
 			return obtenerCVE_USU($correo);
 		} else {
@@ -166,7 +154,7 @@ function enviarEmail($email, $nombre, $asunto, $cuerpo) {
 function validaIdToken($id, $token) {
 	global $mysqli;
 
-	$stmt = $mysqli->prepare("SELECT activacion_usu FROM usuario WHERE cve_usu = ? LIMIT 1");
+	$stmt = $mysqli->prepare("SELECT activo FROM usuarios WHERE id = ? LIMIT 1");
 	$stmt->bind_param("i", $id);
 	$stmt->execute();
 	$stmt->store_result();
@@ -194,7 +182,7 @@ function validaIdToken($id, $token) {
 function activarUsuario($id) {
 	global $mysqli;
 
-	$stmt = $mysqli->prepare("UPDATE usuario SET activacion_usu=1 WHERE cve_usu = ?");
+	$stmt = $mysqli->prepare("UPDATE usuarios SET activo=1 WHERE id = ?");
 	$stmt->bind_param('s', $id);
 	$result = $stmt->execute();
 	$stmt->close();
@@ -212,7 +200,7 @@ function isNullLogin($usuario, $password) {
 function login($usuario, $password) {
 	global $mysqli;
 
-	$stmt = $mysqli->prepare("SELECT cve_usu, tipo_usu, pass_usu FROM usuario WHERE nom_usu = ? || correo_usu = ? LIMIT 1");
+	$stmt = $mysqli->prepare("SELECT id, tipo, password FROM usuarios WHERE nombre = ? || email = ? LIMIT 1");
 	$stmt->bind_param("ss", $usuario, $usuario);
 	$stmt->execute();
 	$stmt->store_result();
@@ -232,8 +220,9 @@ function login($usuario, $password) {
 				lastSession($id);
 				$_SESSION['id_usuario'] = $id;
 				$_SESSION['tipo_usuario'] = $id_tipo;
-
-				header("location: ../vistaPrincipal/indexP.php");
+				$mvc = new MVCController();
+				$mvc->getTemplate();
+//				header("location: index.php");
 			} else {
 
 				$errors = "La contrase&ntilde;a es incorrecta";
@@ -250,7 +239,7 @@ function login($usuario, $password) {
 function lastSession($id) {
 	global $mysqli;
 
-	$stmt = $mysqli->prepare("UPDATE usuario SET usesion_usu=NOW() WHERE cve_usu = ?");
+	$stmt = $mysqli->prepare("UPDATE usuarios SET ultimolog=NOW() WHERE id = ?");
 	$stmt->bind_param('s', $id);
 	$stmt->execute();
 	$stmt->close();
@@ -259,7 +248,7 @@ function lastSession($id) {
 function isActivo($usuario) {
 	global $mysqli;
 
-	$stmt = $mysqli->prepare("SELECT activacion_usu FROM usuario WHERE nom_usu = ? || correo_usu = ? LIMIT 1");
+	$stmt = $mysqli->prepare("SELECT activo FROM usuarios WHERE nombre = ? || email = ? LIMIT 1");
 	$stmt->bind_param('ss', $usuario, $usuario);
 	$stmt->execute();
 	$stmt->bind_result($activacion);
